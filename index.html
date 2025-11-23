@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暗色調刮刮樂遊戲</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d30);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .scratch-game-container {
+            font-family: 'Arial', sans-serif;
+            margin: 10px auto;
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+            max-width: 900px;
+            border: 1px solid #404040;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .left-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .right-section {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .scratch-game-title {
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .scratch-lucky-number {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #ffd93d;
+            background: linear-gradient(145deg, #333333, #2a2a2a);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #444444;
+            box-shadow: 0 4px 15px rgba(255, 217, 61, 0.2);
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .scratch-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px auto;
+            max-width: 360px;
+        }
+        
+        .scratch-card {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4),
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+            margin: 0 auto;
+            border: 1px solid #505050;
+            transition: transform 0.2s ease;
+        }
+        
+        .scratch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.5),
+                        inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .scratch-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 1px solid #404040;
+        }
+        
+        .scratch-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255,255,255,0.3);
+        }
+        
+        .scratch-prize {
+            font-size: 12px;
+            color: #ff6b6b;
+            margin-top: 5px;
+            padding: 0 5px;
+            word-break: break-word;
+            text-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+            font-weight: 500;
+        }
+        
+        .scratch-winning {
+            background: linear-gradient(145deg, #ffd700, #ffb347) !important;
+            animation: scratch-pulse 2s infinite;
+            border: 2px solid #ffd700 !important;
+        }
+        
+        .scratch-winning .scratch-number {
+            color: #1a1a1a;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+        
+        .scratch-winning .scratch-prize {
+            color: #8b4513;
+            text-shadow: 0 0 8px rgba(139, 69, 19, 0.5);
+        }
+        
+        @keyframes scratch-pulse {
+            0% { 
+                box-shadow: 0 8px 20px rgba(0,0,0,0.4),
+                            0 0 0 0 rgba(255, 215, 0, 0.7); 
+            }
+            70% { 
+                box-shadow: 0 8px 20px rgba(0,0,0,0.4),
+                            0 0 0 15px rgba(255, 215, 0, 0); 
+            }
+            100% { 
+                box-shadow: 0 8px 20px rgba(0,0,0,0.4),
+                            0 0 0 0 rgba(255, 215, 0, 0); 
+            }
+        }
+        
+        .scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        
+        .scratch-instructions {
+            margin: 20px auto;
+            color: #cccccc;
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 400px;
+            border: 1px solid #404040;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .scratch-instructions p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .scratch-new-game-btn {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(145deg, #ff6b6b, #e55454);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .scratch-new-game-btn:hover {
+            background: linear-gradient(145deg, #e55454, #cc4444);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .scratch-new-game-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* 品項設定區域樣式 */
+        .prize-setup {
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #404040;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            height: fit-content;
+        }
+        
+        .prize-setup h3 {
+            color: #ffd93d;
+            margin-bottom: 15px;
+            margin-top: 0;
+            text-align: center;
+        }
+        
+        .prize-setup.collapsed {
+            padding: 15px 20px;
+        }
+        
+        .prize-setup.collapsed .prize-inputs {
+            display: none;
+        }
+        
+        .prize-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .prize-input {
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 1px solid #505050;
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: #ffffff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .prize-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .prize-input::placeholder {
+            color: #888888;
+        }
+        
+        .toggle-setup-btn {
+            background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+            color: #cccccc;
+            border: 1px solid #555555;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .toggle-setup-btn:hover {
+            background: linear-gradient(145deg, #5a5a5a, #4a4a4a);
+            color: #ffffff;
+        }
+        
+        .scratch-instructions {
+            margin: 20px 0;
+            color: #cccccc;
+            background: linear-gradient(145deg, #2a2a2a, #1e1e1e);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #404040;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            text-align: left;
+        }
+        
+        .scratch-instructions p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 800px) {
+            .scratch-game-container {
+                flex-direction: column;
+                padding: 20px;
+                margin: 10px;
+                gap: 20px;
+            }
+            
+            .left-section, .right-section {
+                min-width: auto;
+            }
+            
+            .prize-inputs {
+                gap: 8px;
+            }
+            
+            .scratch-area {
+                gap: 10px;
+                max-width: 300px;
+            }
+            
+            .scratch-card {
+                width: 85px;
+                height: 85px;
+            }
+            
+            .scratch-number {
+                font-size: 24px;
+            }
+            
+            .scratch-prize {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scratch-game-container">
+        <!-- 左側：品項設定區域 -->
+        <div class="left-section">
+            <div class="prize-setup" id="prize-setup">
+                <h3>設定獎品品項</h3>
+                <div class="prize-inputs">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 1" value="圖像Script">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 2" value="流程圖表Script">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 3" value="行銷運用Script">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 4" value="Felo JSON Script">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 5" value="蝦皮資料收集">
+                    <input type="text" class="prize-input" placeholder="輸入獎品 6" value="企業研習觀摩一場">
+                </div>
+                <button class="toggle-setup-btn" id="toggle-setup-btn">收起設定</button>
+            </div>
+            
+            <div class="scratch-instructions">
+                <p><strong>遊戲說明：</strong></p>
+                <p>• 慢慢用滑鼠拖拉刮開號碼</p>
+                <p>• 如果號碼與幸運號碼相符就中獎</p>
+                <p>• 可以自訂上方的獎品項目</p>
+                <p>• 點擊"開始新遊戲"重新開始</p>
+            </div>
+        </div>
+        
+        <!-- 右側：遊戲區域 -->
+        <div class="right-section">
+            <h2 class="scratch-game-title">刮刮樂遊戲</h2>
+            <div class="scratch-lucky-number">幸運號碼: <span id="scratch-lucky-num"></span></div>
+            <div class="scratch-area" id="scratch-area">
+                <!-- Scratch cards will be generated here -->
+            </div>
+            <button class="scratch-new-game-btn" id="scratch-new-game-btn">開始新遊戲</button>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲設定
+        const TOTAL_CARDS = 6; // 3x2 網格
+        const MIN_NUMBER = 1;
+        const MAX_NUMBER = 99;
+        
+        // 獲取當前設定的獎品
+        function getCurrentPrizes() {
+            const inputs = document.querySelectorAll('.prize-input');
+            const prizes = [];
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    prizes.push(input.value.trim());
+                }
+            });
+            return prizes.length > 0 ? prizes : ["預設獎品"];
+        }
+        
+        // 產生指定範圍內的隨機數字
+        function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // 產生隨機獎品
+        function getRandomPrize() {
+            const prizes = getCurrentPrizes();
+            return prizes[Math.floor(Math.random() * prizes.length)];
+        }
+        
+        // 清空刮刮樂區域
+        function clearScratchArea() {
+            const scratchArea = document.getElementById('scratch-area');
+            scratchArea.innerHTML = '';
+        }
+        
+        // 切換設定區域顯示/隱藏
+        function togglePrizeSetup() {
+            const setupArea = document.getElementById('prize-setup');
+            const toggleBtn = document.getElementById('toggle-setup-btn');
+            
+            if (setupArea.classList.contains('collapsed')) {
+                setupArea.classList.remove('collapsed');
+                toggleBtn.textContent = '收起設定';
+            } else {
+                setupArea.classList.add('collapsed');
+                toggleBtn.textContent = '展開設定';
+            }
+        }
+        
+        // 初始化遊戲
+        function initializeGame() {
+            // 清除先前的遊戲
+            clearScratchArea();
+            
+            // 設定幸運號碼
+            const luckyNumber = getRandomNumber(MIN_NUMBER, MAX_NUMBER);
+            document.getElementById('scratch-lucky-num').textContent = luckyNumber;
+            
+            const scratchArea = document.getElementById('scratch-area');
+            
+            // 確保至少有一張卡片有幸運號碼
+            const luckyPosition = getRandomNumber(0, TOTAL_CARDS - 1);
+            
+            // 產生刮刮卡
+            for (let i = 0; i < TOTAL_CARDS; i++) {
+                // 創建卡片容器
+                const card = document.createElement('div');
+                card.className = 'scratch-card';
+                
+                // 創建內容區域（數字和獎金）
+                const content = document.createElement('div');
+                content.className = 'scratch-content';
+                
+                // 產生數字（確保至少一個與幸運號碼匹配）
+                let number;
+                if (i === luckyPosition) {
+                    number = luckyNumber;
+                } else {
+                    // 確保一般數字不會與幸運號碼相符
+                    do {
+                        number = getRandomNumber(MIN_NUMBER, MAX_NUMBER);
+                    } while (number === luckyNumber);
+                }
+                
+                const numberDiv = document.createElement('div');
+                numberDiv.className = 'scratch-number';
+                numberDiv.textContent = number;
+                numberDiv.style.visibility = 'hidden'; // 初始時隱藏
+                numberDiv.style.opacity = '0';
+                numberDiv.style.transition = 'opacity 0.3s ease-in-out';
+                content.appendChild(numberDiv);
+                
+                // 產生獎品 - 從設定的品項中隨機選擇
+                const prize = getRandomPrize();
+                
+                const prizeDiv = document.createElement('div');
+                prizeDiv.className = 'scratch-prize';
+                prizeDiv.textContent = prize;
+                prizeDiv.style.visibility = 'hidden'; // 初始時隱藏
+                prizeDiv.style.opacity = '0';
+                prizeDiv.style.transition = 'opacity 0.3s ease-in-out';
+                content.appendChild(prizeDiv);
+                
+                card.appendChild(content);
+                
+                // 創建畫布用於刮刮效果
+                const canvas = document.createElement('canvas');
+                canvas.className = 'scratch-canvas';
+                canvas.width = 100;
+                canvas.height = 100;
+                card.appendChild(canvas);
+                
+                // 將卡片添加到刮刮區域
+                scratchArea.appendChild(card);
+                
+                // 初始化畫布
+                initCanvas(canvas, number, luckyNumber);
+            }
+        }
+        
+        // 初始化畫布刮刮效果
+        function initCanvas(canvas, number, luckyNumber) {
+            const ctx = canvas.getContext('2d');
+            
+            // 創建暗色調的刮刮層漸變
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#4a4a4a');
+            gradient.addColorStop(0.5, '#555555');
+            gradient.addColorStop(1, '#3a3a3a');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 添加暗色調質感
+            for (let i = 0; i < 800; i++) {
+                ctx.beginPath();
+                ctx.arc(
+                    Math.random() * canvas.width, 
+                    Math.random() * canvas.height, 
+                    0.5, 
+                    0, 
+                    Math.PI * 2
+                );
+                const darkness = Math.random() * 0.3;
+                ctx.fillStyle = `rgba(${60 + darkness * 50}, ${60 + darkness * 50}, ${60 + darkness * 50}, 0.7)`;
+                ctx.fill();
+            }
+            
+            // 添加一些暗色裝飾線
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, Math.random() * canvas.height);
+                ctx.lineTo(canvas.width, Math.random() * canvas.height);
+                ctx.strokeStyle = '#606060';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+            
+            // 添加一些暗色裝飾曲線
+            for (let i = 0; i < 2; i++) {
+                ctx.beginPath();
+                const startX = Math.random() * canvas.width;
+                const startY = Math.random() * canvas.height;
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo(
+                    Math.random() * canvas.width, 
+                    Math.random() * canvas.height,
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height
+                );
+                ctx.strokeStyle = '#707070';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+            
+            // 刮刮效果的變數
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            
+            // 透過漸變顯示數字的函數
+            function revealNumberGradually(percentage) {
+                const numElement = canvas.parentElement.querySelector('.scratch-number');
+                const prizeElement = canvas.parentElement.querySelector('.scratch-prize');
+                
+                if (percentage > 0.3) {
+                    numElement.style.visibility = 'visible';
+                    numElement.style.opacity = Math.min(1, (percentage - 0.3) * 2);
+                }
+                
+                if (percentage > 0.5) {
+                    prizeElement.style.visibility = 'visible';
+                    prizeElement.style.opacity = Math.min(1, (percentage - 0.5) * 2);
+                }
+            }
+            
+            // 觸控事件
+            canvas.addEventListener('touchstart', handleStart, false);
+            canvas.addEventListener('touchmove', handleMove, false);
+            canvas.addEventListener('touchend', handleEnd, false);
+            
+            // 滑鼠事件
+            canvas.addEventListener('mousedown', handleStart, false);
+            canvas.addEventListener('mousemove', handleMove, false);
+            canvas.addEventListener('mouseup', handleEnd, false);
+            canvas.addEventListener('mouseleave', handleEnd, false);
+            
+            function handleStart(e) {
+                e.preventDefault();
+                isDrawing = true;
+                
+                const pos = getPosition(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            }
+            
+            function handleMove(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                
+                const pos = getPosition(e);
+                const x = pos.x;
+                const y = pos.y;
+                
+                // 小刷子慢慢刮
+                const brushSize = 12; // 略微增大筆刷尺寸以配合暗色主題
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                // 使用連續的線條刮擦，而不是單個圓點
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.lineWidth = brushSize;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                
+                // 添加一些小圓點增加刮擦質感
+                ctx.beginPath();
+                ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 檢查刮開百分比並逐漸顯示數字
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imageData.data;
+                let transparentPixels = 0;
+                
+                for (let i = 3; i < pixels.length; i += 4) {
+                    if (pixels[i] === 0) { // 完全透明
+                        transparentPixels++;
+                    }
+                }
+                
+                const totalPixels = canvas.width * canvas.height;
+                const scratchedPercentage = transparentPixels / totalPixels;
+                
+                // 逐漸顯示數字和獎品
+                revealNumberGradually(scratchedPercentage);
+                
+                // 檢查是否中獎
+                checkWinning(scratchedPercentage);
+                
+                lastX = x;
+                lastY = y;
+            }
+            
+            function handleEnd() {
+                isDrawing = false;
+            }
+            
+            function getPosition(e) {
+                const rect = canvas.getBoundingClientRect();
+                if (e.type.includes('mouse')) {
+                    return {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top
+                    };
+                } else {
+                    const touch = e.touches[0];
+                    return {
+                        x: touch.clientX - rect.left,
+                        y: touch.clientY - rect.top
+                    };
+                }
+            }
+            
+            // 檢查是否中獎
+            function checkWinning(scratchedPercentage) {
+                // 如果刮開了70%以上，且號碼與幸運號碼相符，標記為中獎
+                if (scratchedPercentage > 0.7 && number === luckyNumber) {
+                    // 只標記為中獎，不改變獎品
+                    canvas.parentElement.querySelector('.scratch-content').classList.add('scratch-winning');
+                }
+            }
+        }
+        
+        // 設置新遊戲按鈕
+        document.getElementById('scratch-new-game-btn').addEventListener('click', initializeGame);
+        
+        // 設置切換按鈕
+        document.getElementById('toggle-setup-btn').addEventListener('click', togglePrizeSetup);
+        
+        // 頁面載入後初始化遊戲
+        initializeGame();
+    </script>
+</body>
+</html>
